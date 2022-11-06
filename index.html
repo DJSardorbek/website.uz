@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>View challenge</title>
+  </head>
+
+  <input type="text" id="todo-title" />
+  <input type="date" id="due-date" />
+  <button onclick="addTodo()">Add Todo</button>
+  <div id="todo-list"></div>
+
+  <body>
+    <script>
+      // Model
+      let todos;
+
+      let savedTodos = JSON.parse(localStorage.getItem("todos"));
+      if (Array.isArray(savedTodos)) {
+        todos = savedTodos;
+      } else {
+        todos = [
+          {
+            title: "Get grociers",
+            dueDate: "22.10.2022",
+            isEditing: false,
+            id: "id1",
+          },
+          {
+            title: "Make dinner",
+            dueDate: "30.10.2022",
+            isEditing: true,
+            id: "id2",
+          },
+          {
+            title: "Wash car",
+            dueDate: "05.10.2022",
+            isEditing: false,
+            id: "id3",
+          },
+        ];
+      }
+
+      function createTodo(title, dueDate) {
+        const id = '' + new Date().getTime();
+        todos.push({
+            title: title,
+            dueDate: dueDate,
+            isEditting: false,
+            id: id
+        });
+
+        saveTodos();
+      }
+
+      function removeTodo(idToDelete) {
+        todos = todos.filter(function(todo) {
+            if(todo.id === idToDelete){
+                return false;
+            }
+            else {
+                return true;
+            }
+        })
+      }
+
+      function saveTodos() {
+        localStorage.setItem("todos", JSON.stringify(todos));
+      }
+
+      // Controller
+
+      function addTodo() {
+        let title = document.getElementById('todo-title');
+        title = title.value;
+
+        let dueDate = document.getElementById('due-date');
+        dueDate = dueDate.value;
+
+        createTodo(title, dueDate);
+        saveTodos();
+        render();
+      }
+
+      function deleteTodo(event) {
+        const deleteButton = event.target;
+        const idToDelete = deleteButton.id;
+        removeTodo(idToDelete);
+        saveTodos();
+        render();
+
+      }
+
+      function updateTodo(event) {
+        const updateButton = event.target;
+        const idToUpdate = updateButton.dataset.todoId;
+
+        todos.forEach(todo => {
+            if(todo.id === idToUpdate){
+                todo.isEditing = false;
+                let items = document.querySelectorAll(`[data-todo-id="${idToUpdate}"]`);
+                todo.title = items[0].value;
+                todo.dueDate = items[1].value;
+                return;
+            }
+        });
+
+        saveTodos();
+
+        render();
+      }
+
+      function editTodo(event) {
+        const edit_button = event.target;
+        const idToEdit = edit_button.dataset.todoId;
+
+        todos.forEach(todo => {
+            if(todo.id === idToEdit){
+                todo.isEditing = true;
+                return;
+            }
+        });
+
+        saveTodos();
+
+        render();
+
+      }
+
+      // View
+      function render() {
+        let todo_list  = document.getElementById('todo-list');
+        todo_list.innerHTML = '';
+
+        todos.forEach(todo => {
+            let element = document.createElement('div');
+
+            if(todo.isEditing) {
+
+                let todo_title = document.createElement('input');
+                todo_list.setAttribute('type', 'text');
+                todo_title.value = todo.title;
+                todo_title.dataset.todoId = todo.id;
+                element.appendChild(todo_title);
+
+                let due_date = document.createElement('input');
+                due_date.setAttribute('type', 'date');
+                due_date.style = "margin-left: 6px";
+                due_date.value = todo.dueDate;
+                due_date.dataset.todoId = todo.id;
+                element.appendChild(due_date);
+                
+
+                let update_button = document.createElement('button');
+                update_button.innerText = "Update";
+                update_button.style = "margin-left: 6px;";
+                update_button.onclick = updateTodo;
+                update_button.dataset.todoId = todo.id;
+                element.appendChild(update_button);
+
+                let delete_button = document.createElement('button');
+                delete_button.innerText = "Delete";
+                delete_button.style = "margin-left: 6px;";
+                delete_button.id = todo.id;
+                delete_button.onclick = deleteTodo;
+                element.appendChild(delete_button);
+
+            }else {
+                element.innerText = todo.title + ' ' + todo.dueDate;
+
+                let edit_button = document.createElement('button');
+                edit_button.innerText = "Edit";
+                edit_button.style = "margin-left: 6px;";
+                edit_button.onclick = editTodo;
+                edit_button.dataset.todoId = todo.id;
+                element.appendChild(edit_button);
+
+                let delete_button = document.createElement('button');
+                delete_button.innerText = "Delete";
+                delete_button.style = "margin-left: 6px;";
+                delete_button.id = todo.id;
+                delete_button.onclick = deleteTodo;
+                
+                element.appendChild(delete_button);
+            }
+
+            console.log(element);
+
+            todo_list.append(element);
+        });
+
+      }
+
+      render();
+
+    </script>
+  </body>
+</html>
